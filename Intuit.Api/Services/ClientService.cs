@@ -3,6 +3,8 @@ using Intuit.Api.Dtos;
 using Intuit.Api.Exceptions;
 using Intuit.Api.Interfaces;
 using Intuit.Api.Logging;
+using Intuit.Api.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace Intuit.Api.Services
 {
@@ -14,174 +16,141 @@ namespace Intuit.Api.Services
             LogService = logService;
         }
 
-        public async Task<bool> AddNewClients(ClientCreateDto dto)
+        public async Task<ServiceResult> GetAllClients()
         {
-            if(await ClientRepository.GetAnyAsync(dto.Cuit))
-            {
-                throw new AppException($"[ApplicationException] - Client with Cuit: {dto.Cuit} already exists", LogService);
-            }
-            else
-            {
-                try
-                {
-                    var client = new Client
-                    {
-                        FirstName = dto.FirstName.Trim(),
-                        LastName = dto.LastName.Trim(),
-                        BirthDate = dto.BirthDate,
-                        Cuit = dto.Cuit,
-                        Address = dto.Address?.Trim(),
-                        Mobile = dto.Mobile.Trim(),
-                        Email = dto.Email.Trim().ToLowerInvariant()
-                    };
+            var list = await ClientRepository.GetAllAsync();
+            var dto = list.Select(c => new ClientReadDto(
+                c.ClientId, c.FirstName, c.LastName, c.BirthDate, c.Cuit, c.Address, c.Mobile, c.Email)).ToList();
 
-                    var result = await ClientRepository.AddAsync(client);
-
-                    if (!result)
-                    {
-                        throw new AppException($"[ApplicationException] - Failed to add a new client: {ToJson(dto)}", LogService);
-                    }
-
-                    return result;
-                }
-                catch (Exception ex)
-                {
-                    throw new AppException($"[ApplicationException] - An error occurred while adding a new client: {ToJson(dto)}", LogService, ex);
-                }
-            }
-
+            LogService.LogInfo($"[Service] GetAll -> {dto.Count} items");
+            return ServiceResult.Ok(dto);
         }
 
-        public async Task<bool> DeleteClient(int id)
+        public async Task<ServiceResult> GetByClientId(int id)
+        {
+            var c = await ClientRepository.GetByIdAsync(id);
+            if (c is null)
+            {
+                LogService.LogWarning($"[Service] GetById -> 404 (id={id})");
+                return ServiceResult.NotFound($"El Cliente con el id={id} no existe.");
+            }
+
+            var dto = new ClientReadDto(c.ClientId, c.FirstName, c.LastName, c.BirthDate, c.Cuit, c.Address, c.Mobile, c.Email);
+            LogService.LogInfo($"[Service] GetById -> 200 (id={id})");
+            return ServiceResult.Ok(dto);
+        }
+
+        public async Task<ServiceResult> SearchClientByNameAsync(string nameOrQuery)
+        {
+            var list = await ClientRepository.SearchByNameAsync(nameOrQuery);
+            var dto = list.Select(c => new ClientReadDto(
+                c.ClientId, c.FirstName, c.LastName, c.BirthDate, c.Cuit, c.Address, c.Mobile, c.Email)).ToList();
+
+            LogService.LogInfo($"[Service] Search '{nameOrQuery}' -> {dto.Count} items");
+            return ServiceResult.Ok(dto); 
+        }
+
+        public async Task<ServiceResult> AddNewClients(ClientCreateDto dto)
+        {
+            if (await ClientRepository.GetAnyAsync(dto.Cuit))
+            {
+                LogService.LogWarning($"[Service] Create -> 409 (CUIT={dto.Cuit})");
+                return ServiceResult.Conflict($"CUIT {dto.Cuit} ya existe.");
+            }
+
+            var c = new Client
+            {
+                FirstName = dto.FirstName.Trim(),
+                LastName = dto.LastName.Trim(),
+                BirthDate = dto.BirthDate,
+                Cuit = dto.Cuit,
+                Address = dto.Address?.Trim(),
+                Mobile = dto.Mobile.Trim(),
+                Email = dto.Email.Trim().ToLowerInvariant()
+            };
+
+            try
+            {
+                var ok = await ClientRepository.AddAsync(c);
+                if (!ok)
+                    throw new AppException($"[DB] Falló insertar cliente: {ToJson(dto)}", LogService);
+
+                var read = new ClientReadDto(c.ClientId, c.FirstName, c.LastName, c.BirthDate, c.Cuit, c.Address, c.Mobile, c.Email);
+                LogService.LogInfo($"[Service] Create -> 201 (id={c.ClientId})");
+                return ServiceResult.Ok(read, "Cliente creado correctamente.");
+            }
+            catch (DbUpdateException ex)
+            {
+                throw new AppException($"[DB] Excepción insertando cliente: {ToJson(dto)}", LogService, ex);
+            }
+        }
+
+        public async Task<ServiceResult> UpdateClient(ClientUpdateDto dto)
+        {
+            var c = await ClientRepository.GetByIdAsync(dto.ClientId);
+            if (c is null)
+            {
+                LogService.LogWarning($"[Service] Update -> 404 (id={dto.ClientId})");
+                return ServiceResult.NotFound($"Id {dto.ClientId} no existe.");
+            }
+
+
+            var cuitDuplicado = await ClientRepository.GetAnyAsync(dto.Cuit)
+                && !string.Equals(c.Cuit, dto.Cuit, StringComparison.OrdinalIgnoreCase);
+
+            if (cuitDuplicado)
+            {
+                LogService.LogWarning($"[Service] Update -> 409 (CUIT={dto.Cuit})");
+                return ServiceResult.Conflict($"CUIT {dto.Cuit} pertenece a otro cliente.");
+            }
+
+            c.FirstName = dto.FirstName.Trim();
+            c.LastName = dto.LastName.Trim();
+            c.BirthDate = dto.BirthDate;
+            c.Cuit = dto.Cuit;
+            c.Address = dto.Address?.Trim();
+            c.Mobile = dto.Mobile.Trim();
+            c.Email = dto.Email.Trim().ToLowerInvariant();
+
+            try
+            {
+                var ok = await ClientRepository.UpdateAsync(c);
+                if (!ok)
+                    throw new AppException($"[DB] Falló actualizar cliente: {ToJson(dto)}", LogService);
+
+                var read = new ClientReadDto(c.ClientId, c.FirstName, c.LastName, c.BirthDate, c.Cuit, c.Address, c.Mobile, c.Email);
+                LogService.LogInfo($"[Service] Update -> 200 (id={c.ClientId})");
+                return ServiceResult.Ok(read, "Cliente actualizado.");
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                LogService.LogWarning($"[Service] Update -> 409 (concurrencia)");
+                return ServiceResult.Conflict("Conflicto de concurrencia.");
+            }
+            catch (DbUpdateException ex)
+            {
+                throw new AppException($"[DB] Excepción actualizando cliente: {ToJson(dto)}", LogService, ex);
+            }
+        }
+
+        public async Task<ServiceResult> DeleteClient(int id)
         {
             try
             {
-                var result = await ClientRepository.DeleteAsync(id);
-
-                if (!result)
+                var ok = await ClientRepository.DeleteAsync(id);
+                if (!ok)
                 {
-                    throw new AppException($"[ApplicationException] - Failed to delete client with id: {id}", LogService);
+                    LogService.LogWarning($"[Service] Delete -> 404 (id={id})");
+                    return ServiceResult.NotFound($"El cliente con el Id {id} no existe.");
                 }
 
-                return result;
+                LogService.LogInfo($"[Service] Delete -> 204 (id={id})");
+
+                return new ServiceResult { Result = true, Message = "Cliente eliminado.", Status = StatusCodes.Status204NoContent };
             }
-            catch (Exception ex)
+            catch (DbUpdateException ex)
             {
-                throw new AppException($"[ApplicationException] - An error occurred while deleting a client with id: {id}", LogService, ex);
-            }
-        }
-
-        public async Task<List<ClientReadDto?>> GetAllClients()
-        {
-            List<ClientReadDto?> clientsDto = new List<ClientReadDto?>();
-
-            var clients = await ClientRepository.GetAllAsync();
-
-            if (clients != null)
-            {
-                foreach (var client in clients)
-                {
-                    clientsDto.Add(new ClientReadDto(
-                        client.ClientId,
-                        client.FirstName,
-                        client.LastName,
-                        client.BirthDate,
-                        client.Cuit,
-                        client.Address,
-                        client.Mobile,
-                        client.Email
-                    ));
-                }
-            }
-
-            return clientsDto;
-        }
-
-        public async Task<ClientReadDto?> GetByClientId(int id)
-        {
-            var client = await ClientRepository.GetByIdAsync(id);
-
-            if (client == null)
-            {
-                return null;
-            }
-
-            return new ClientReadDto(
-                client.ClientId,
-                client.FirstName,
-                client.LastName,
-                client.BirthDate,
-                client.Cuit,
-                client.Address,
-                client.Mobile,
-                client.Email
-            );
-        }
-
-        public async Task<List<ClientReadDto?>> SearchClientByNameAsync(string name)
-        {
-            List<ClientReadDto?> clientsDto = new List<ClientReadDto?>();
-
-            var clients = await ClientRepository.SearchByNameAsync(name);
-
-            if (clients != null)
-            {
-                foreach (var client in clients)
-                {
-                    clientsDto.Add(new ClientReadDto(
-                        client.ClientId,
-                        client.FirstName,
-                        client.LastName,
-                        client.BirthDate,
-                        client.Cuit,
-                        client.Address,
-                        client.Mobile,
-                        client.Email
-                    ));
-                }
-            }
-
-            return clientsDto;
-        }
-
-        public async Task<bool> UpdateClient(ClientUpdateDto dto)
-        {
-            try
-            {
-                var client = await ClientRepository.GetByIdAsync(dto.ClientId);
-
-                if (client == null)
-                {
-                    throw new AppException($"[ApplicationException] - Client with id: {dto.ClientId} not found", LogService);
-                }
-
-                var valid = await ClientRepository.GetAnyAsync(dto.Cuit);
-
-                if (valid)
-                {
-                    throw new AppException($"[ApplicationException] - Client with Cuit: {dto.Cuit} already exists", LogService);
-                }
-
-                client.FirstName = dto.FirstName.Trim();
-                client.LastName = dto.LastName.Trim();
-                client.BirthDate = dto.BirthDate;
-                client.Cuit = dto.Cuit;
-                client.Address = dto.Address?.Trim();
-                client.Mobile = dto.Mobile.Trim();
-                client.Email = dto.Email.Trim().ToLowerInvariant();
-
-                var result = await ClientRepository.UpdateAsync(client);
-
-                if (!result)
-                {
-                    throw new AppException($"[ApplicationException] - Failed to update client: {ToJson(dto)}", LogService);
-                }
-
-                return result;
-            }
-            catch (Exception ex)
-            {
-                throw new AppException($"[ApplicationException] - An error occurred while updating a client: {ToJson(dto)}", LogService, ex);
+                throw new AppException($"[DB] Excepción eliminando cliente id={id}", LogService, ex);
             }
         }
     }

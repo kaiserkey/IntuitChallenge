@@ -13,6 +13,6 @@ namespace Intuit.Api.Dtos
         [Required, Cuit] string Cuit,
         string? Address,
         [Required] string Mobile,
-        [Required, EmailAddress] string Email
+        [Required, EmailAddress(ErrorMessage = "El email ingresado tiene un formato incorrecto.")] string Email
     );
 }

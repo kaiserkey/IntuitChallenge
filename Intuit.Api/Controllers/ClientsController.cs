@@ -10,293 +10,93 @@ namespace Intuit.Api.Controllers
     [ApiController]
     public class ClientsController : ControllerBase
     {
-        private readonly ILogService<LogService> _logService;
-        private readonly IClientService _clientService;
+        private readonly ILogService<LogService> _log;
+        private readonly IClientService _svc;
 
-        public ClientsController(ILogService<LogService> logService, IClientService clientService)
+        public ClientsController(ILogService<LogService> log, IClientService svc)
         {
-            _logService = logService;
-            _clientService = clientService;
+            _log = log;
+            _svc = svc;
         }
 
         /// <summary>
-        /// Retrieves all clients.
+        /// Mapea el resultado del servicio al ActionResult correspondiente.
         /// </summary>
-        [HttpGet("clients")]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ClientReadDto))]
-        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(OperationResult))]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(OperationResult))]
-        [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(OperationResult))]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(OperationResult))]
-        public async Task<ActionResult<IEnumerable<ClientReadDto>>> GetAllClients()
+        private ActionResult Map(ServiceResult res) => res.Status switch
         {
-            try
-            {
-                var clients = await _clientService.GetAllClients();
-
-                if (clients == null || !clients.Any())
-                {
-                    return NotFound(new OperationResult
-                    {
-                        Result = false,
-                        Status = 404,
-                        Title = "No clients found",
-                        Detail = "There are no clients available in the system."
-                    });
-                }
-
-                return Ok(clients);
-            }
-            catch (Exception ex)
-            {
-                _logService.LogError($"[ClientsController] - An error occurred while retrieving all clients: {ex.Message}");
-                return StatusCode(500, new OperationResult
-                {
-                    Result = false,
-                    Status = 500,
-                    Title = "Internal server error",
-                    Detail = "An unexpected error occurred. Please try again later."
-                });
-            }
-        }
+            StatusCodes.Status200OK => res.Data is not null ? Ok(res.Data) : Ok(new { res.Result, res.Message }),
+            StatusCodes.Status404NotFound => NotFound(res.Message),
+            StatusCodes.Status409Conflict => Conflict(res.Message),
+            StatusCodes.Status400BadRequest => BadRequest(res.Message),
+            StatusCodes.Status204NoContent => NoContent(),
+            _ => StatusCode(res.Status, res.Message ?? "Unexpected error")
+        };
 
         /// <summary>
-        /// Retrieves a client by their ID.
+        /// Obtiene todos los clientes.
         /// </summary>
-        [HttpGet("client/{id}")]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ClientReadDto))]
-        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(OperationResult))]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(OperationResult))]
-        [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(OperationResult))]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(OperationResult))]
-        public async Task<ActionResult<ClientReadDto>> GetByClientId([FromRoute] int id)
-        {
-            try
-            {
-                var client = await _clientService.GetByClientId(id);
-
-                if (client == null)
-                {
-                    return NotFound(new OperationResult
-                    {
-                        Result = false,
-                        Status = 404,
-                        Title = "Client not found",
-                        Detail = $"No client found with ID {id}."
-                    });
-                }
-
-                return Ok(client);
-            }
-            catch (Exception ex)
-            {
-                _logService.LogError($"[ClientsController] - An error occurred while retrieving client with ID {id}: {ex.Message}");
-                return StatusCode(500, new OperationResult
-                {
-                    Result = false,
-                    Status = 500,
-                    Title = "Internal server error",
-                    Detail = "An unexpected error occurred. Please try again later."
-                });
-            }
-        }
+        [HttpGet("getAll")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<ClientReadDto>))]
+        public async Task<ActionResult> GetAll()
+            => Map(await _svc.GetAllClients());
 
         /// <summary>
-        /// Searches for clients by their name.
+        /// Obtiene un cliente por id.
+        /// </summary>
+        [HttpGet("getById/{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ClientReadDto))]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult> GetById(int id)
+            => Map(await _svc.GetByClientId(id));
+
+        /// <summary>
+        /// Busca por nombre/apellido (substring, case-insensitive).
         /// </summary>
         [HttpGet("search")]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ClientReadDto))]
-        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(OperationResult))]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(OperationResult))]
-        [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(OperationResult))]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(OperationResult))]
-        public async Task<ActionResult<IEnumerable<ClientReadDto>>> SearchClientByName([FromQuery] string name)
-        {
-            try
-            {
-                if (string.IsNullOrWhiteSpace(name))
-                {
-                    return BadRequest(new OperationResult
-                    {
-                        Result = false,
-                        Status = 400,
-                        Title = "Invalid search parameter",
-                        Detail = "The 'name' query parameter cannot be null or empty."
-                    });
-                }
-
-                var clients = await _clientService.SearchClientByNameAsync(name);
-
-                if (clients == null || !clients.Any())
-                {
-                    return NotFound(new OperationResult
-                    {
-                        Result = false,
-                        Status = 404,
-                        Title = "No clients found",
-                        Detail = $"No clients found matching the name '{name}'."
-                    });
-                }
-
-                return Ok(clients);
-            }
-            catch (Exception ex)
-            {
-                _logService.LogError($"[ClientsController] - An error occurred while searching for clients by name: {ex.Message}");
-                return StatusCode(500, new OperationResult
-                {
-                    Result = false,
-                    Status = 500,
-                    Title = "Internal server error",
-                    Detail = "An unexpected error occurred. Please try again later."
-                });
-            }
-        }
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<ClientReadDto>))]
+        public async Task<ActionResult> Search([FromQuery] string name = "")
+            => Map(await _svc.SearchClientByNameAsync(name));
 
         /// <summary>
-        /// Adds a new client.
+        /// Crea un cliente.
         /// </summary>
-        [HttpPost("add")]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ClientReadDto))]
-        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(OperationResult))]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(OperationResult))]
-        [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(OperationResult))]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(OperationResult))]
-        public async Task<ActionResult<ClientReadDto>> AddNewClient([FromBody] ClientCreateDto dto)
+        [HttpPost("create")]
+        [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(ClientReadDto))]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult> Create([FromBody] ClientCreateDto dto)
         {
-            if (dto == null)
-            {
-                return BadRequest(new OperationResult
-                {
-                    Result = false,
-                    Status = 400,
-                    Title = "Invalid client data",
-                    Detail = "The client data provided is null."
-                });
-            }
-            try
-            {
-                var result = await _clientService.AddNewClients(dto);
-                if (!result)
-                {
-                    return StatusCode(500, new OperationResult
-                    {
-                        Result = false,
-                        Status = 500,
-                        Title = "Failed to add client",
-                        Detail = "An error occurred while adding the new client."
-                    });
-                }
+            var res = await _svc.AddNewClients(dto);
 
-                return Ok(new OperationResult { Result = true, Status = 200, Title = "Success", Detail = "Client added successfully" });
-            }
-            catch (Exception ex)
+            if (res.Result && res.Data is ClientReadDto created)
             {
-                _logService.LogError($"[ClientsController] - An error occurred while adding a new client: {ex.Message}");
-                return StatusCode(500, new OperationResult
-                {
-                    Result = false,
-                    Status = 500,
-                    Title = "Internal server error",
-                    Detail = "An unexpected error occurred. Please try again later."
-                });
+                _log.LogInfo($"[Controller] 201 -> id={created.ClientId}");
+                return CreatedAtAction(nameof(GetById), new { id = created.ClientId }, created);
             }
+
+            return Map(res);
         }
 
         /// <summary>
-        /// Deletes a client by ID.
-        /// </summary>
-        [HttpDelete("delete/{id}")]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(OperationResult))]
-        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(OperationResult))]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(OperationResult))]
-        [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(OperationResult))]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(OperationResult))]
-        public async Task<ActionResult<OperationResult>> DeleteClient(int id)
-        {
-            try
-            {
-                var result = await _clientService.DeleteClient(id);
-                if (!result)
-                {
-                    return NotFound(new OperationResult
-                    {
-                        Result = false,
-                        Status = 404,
-                        Title = "Client not found",
-                        Detail = $"No client found with ID {id} to delete."
-                    });
-                }
-                return Ok(new OperationResult
-                {
-                    Result = true,
-                    Status = 200,
-                    Title = "Client deleted",
-                    Detail = $"Client with ID {id} has been successfully deleted."
-                });
-            }
-            catch (Exception ex)
-            {
-                _logService.LogError($"[ClientsController] - An error occurred while deleting client with ID {id}: {ex.Message}");
-                return StatusCode(500, new OperationResult
-                {
-                    Result = false,
-                    Status = 500,
-                    Title = "Internal server error",
-                    Detail = "An unexpected error occurred. Please try again later."
-                });
-            }
-        }
-
-        /// <summary>
-        /// Updates an existing client's information.
+        /// Actualiza un cliente.
         /// </summary>
         [HttpPut("update")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ClientReadDto))]
-        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(OperationResult))]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(OperationResult))]
-        [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(OperationResult))]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(OperationResult))]
-        public async Task<ActionResult<ClientReadDto>> UpdateClient([FromBody] ClientUpdateDto dto)
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        public async Task<ActionResult> Update([FromBody] ClientUpdateDto dto)
         {
-            if (dto == null || dto.ClientId <= 0)
-            {
-                return BadRequest(new OperationResult
-                {
-                    Result = false,
-                    Status = 400,
-                    Title = "Invalid client data",
-                    Detail = "The client data provided is null or has an invalid ID."
-                });
-            }
-            try
-            {
-                var result = await _clientService.UpdateClient(dto);
-                if (!result)
-                {
-                    return NotFound(new OperationResult
-                    {
-                        Result = false,
-                        Status = 404,
-                        Title = "Client not found",
-                        Detail = $"No client found with ID {dto.ClientId} to update."
-                    });
-                }
-
-                return Ok(new OperationResult { Result = true, Status = 200, Title = "Success", Detail = "Client updated successfully" });
-            }
-            catch (Exception ex)
-            {
-                _logService.LogError($"[ClientsController] - An error occurred while updating client with ID {dto.ClientId}: {ex.Message}");
-                return StatusCode(500, new OperationResult
-                {
-                    Result = false,
-                    Status = 500,
-                    Title = "Internal server error",
-                    Detail = "An unexpected error occurred. Please try again later."
-                });
-            }
+            return Map(await _svc.UpdateClient(dto));
         }
+
+        /// <summary>
+        /// Elimina un cliente.
+        /// </summary>
+        [HttpDelete("delete/{id}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult> Delete(int id)
+            => Map(await _svc.DeleteClient(id));
 
     }
 }

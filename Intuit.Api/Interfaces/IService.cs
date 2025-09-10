@@ -1,13 +1,14 @@
 ﻿using Intuit.Api.Dtos;
+using Intuit.Api.Models;
 
 namespace Intuit.Api.Interfaces
 {
     public interface IService
     {
-        Task<List<ClientReadDto?>> GetAllClients();
-        Task<ClientReadDto?> GetByClientId(int id);
-        Task<bool> AddNewClients(ClientCreateDto entity);
-        Task<bool> UpdateClient(ClientUpdateDto entity);
-        Task<bool> DeleteClient(int id);
+        Task<ServiceResult> GetAllClients();
+        Task<ServiceResult> GetByClientId(int id);
+        Task<ServiceResult> AddNewClients(ClientCreateDto entity);
+        Task<ServiceResult> UpdateClient(ClientUpdateDto entity);
+        Task<ServiceResult> DeleteClient(int id);
     }
 }
