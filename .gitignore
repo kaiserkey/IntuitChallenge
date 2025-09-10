@@ -1,0 +1,141 @@
+# Ignorar todas las carpetas 'Migrations/' en cualquier nivel del directorio
+**/Migrations/
+
+# Ignorar todas las carpetas 'bin/' en cualquier nivel del directorio
+**/bin/
+
+# Ignorar todas las carpetas 'obj/' en cualquier nivel del directorio
+**/obj/
+
+# Ignorar todas las carpetas '.vs/' en cualquier nivel del directorio
+**/.vs/
+
+# Ignorar todas las carpetas 'artifacts/' en cualquier nivel del directorio
+**/artifacts/
+
+# Ignorar todas las carpetas 'publish/' en cualquier nivel del directorio
+**/publish/
+
+# Ignorar todas las carpetas 'TestResults/' en cualquier nivel del directorio
+**/TestResults/
+
+# Ignorar todas las carpetas 'logs/' en cualquier nivel del directorio
+**/LogFile/
+
+# Ignorar todas las carpetas 'packages/' en cualquier nivel del directorio
+**/packages/
+
+# Ignorar todas las carpetas 'node_modules/' en cualquier nivel del directorio (si aplica)
+**/node_modules/
+
+# Ignorar todas las carpetas 'dist/' en cualquier nivel del directorio (si aplica)
+**/dist/
+
+# Ignorar todas las carpetas 'tmp/' en cualquier nivel del directorio (si aplica)
+**/tmp/
+
+# Ignorar todas las carpetas '.idea/' en cualquier nivel del directorio
+**/.idea/
+
+# Ignorar todas las carpetas '.vscode/' en cualquier nivel del directorio
+**/.vscode/
+
+# Ignorar todas las carpetas '.azure/' en cualquier nivel del directorio
+**/.azure/
+
+# Ignorar todas las carpetas '.nuget/' en cualquier nivel del directorio
+**/.nuget/
+
+# Ignorar todas las carpetas 'bower_components/' en cualquier nivel del directorio (si aplica)
+**/bower_components/
+
+# Ignorar todas las carpetas '.sass-cache/' en cualquier nivel del directorio (si aplica)
+**/.sass-cache/
+
+# Ignorar todos los archivos '*.user' en cualquier nivel del directorio
+**/*.user
+
+# Ignorar todos los archivos '*.suo' en cualquier nivel del directorio
+**/*.suo
+
+# Ignorar todos los archivos '*.userprefs' en cualquier nivel del directorio
+**/*.userprefs
+
+# Ignorar todos los archivos '*.log' en cualquier nivel del directorio
+**/*.log
+
+# Ignorar todos los archivos '*.tmp' en cualquier nivel del directorio
+**/*.tmp
+
+# Ignorar todos los archivos '*.temp' en cualquier nivel del directorio
+**/*.temp
+
+# Ignorar todos los archivos '*.nupkg' en cualquier nivel del directorio
+**/*.nupkg
+
+# Ignorar todos los archivos '*.csproj.user' en cualquier nivel del directorio
+**/*.csproj.user
+
+# Ignorar todos los archivos '*.csproj.nuget.*' en cualquier nivel del directorio
+**/*.csproj.nuget.*
+
+# Ignorar todos los archivos '*.csprojAssemblyReference.cache' en cualquier nivel del directorio
+**/*.csprojAssemblyReference.cache
+
+# Ignorar todos los archivos '*.roslyn.json' en cualquier nivel del directorio
+**/*.roslyn.json
+
+# Ignorar todos los archivos '*.msbuild.*' en cualquier nivel del directorio
+**/*.msbuild.*
+
+# Ignorar todos los archivos '*.msb.*' en cualquier nivel del directorio
+**/*.msb.*
+
+# Ignorar todos los archivos '_ReSharper.*' en cualquier nivel del directorio
+**/_ReSharper.*
+
+# Ignorar todos los archivos '*.ReSharper.*' en cualquier nivel del directorio
+**/*.ReSharper.*
+
+# Ignorar todos los archivos '*.VC.db' en cualquier nivel del directorio
+**/*.VC.db
+
+# Ignorar todos los archivos '*.VC.VC.opendb' en cualquier nivel del directorio
+**/*.VC.VC.opendb
+
+# Ignorar todos los archivos '*.trx' en cualquier nivel del directorio
+**/*.trx
+
+# Ignorar todos los archivos '*.coverage' en cualquier nivel del directorio
+**/*.coverage
+
+# Ignorar todos los archivos '*.coveragexml' en cualquier nivel del directorio
+**/*.coveragexml
+
+# Ignorar todos los archivos 'docker-compose.override.yml' en cualquier nivel del directorio
+**/docker-compose.override.yml
+
+# Ignorar todos los archivos 'docker-compose.local.yml' en cualquier nivel del directorio
+**/docker-compose.local.yml
+
+# Ignorar todos los archivos 'Dockerfile.local' en cualquier nivel del directorio
+**/Dockerfile.local
+
+# Ignorar todos los archivos '.env' en cualquier nivel del directorio
+**/.env
+
+# Ignorar todos los archivos '.env.local' en cualquier nivel del directorio
+**/.env.local
+
+# Ignorar todos los archivos '.env.development' en cualquier nivel del directorio
+**/.env.development
+
+# Ignorar todos los archivos 'npm-debug.log*' en cualquier nivel del directorio (si aplica)
+**/npm-debug.log*
+
+# Ignorar todos los archivos 'yarn-debug.log*' en cualquier nivel del directorio (si aplica)
+**/yarn-debug.log*
+
+# Ignorar todos los archivos 'yarn-error.log*' en cualquier nivel del directorio (si aplica)
+**/yarn-error.log*
+SuperStock.Api/appsettings.json
