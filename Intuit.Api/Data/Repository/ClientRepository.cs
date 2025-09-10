@@ -102,7 +102,7 @@ namespace Intuit.Api.Data.Repository
             try
             {
                 var clients = await Context.Client
-                    .Where(c => EF.Functions.Like(c.FirstName + " " + c.LastName, $"%{name}%"))
+                    .Where(c => EF.Functions.ILike(c.FirstName + " " + c.LastName, $"%{name}%"))
                     .OrderBy(c => c.ClientId)
                     .ToListAsync();
 

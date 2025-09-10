@@ -103,7 +103,7 @@ namespace Intuit.Api.Services
 
             if (client == null)
             {
-                throw new AppException($"[ApplicationException] - Client with id: {id} not found", LogService);
+                return null;
             }
 
             return new ClientReadDto(
