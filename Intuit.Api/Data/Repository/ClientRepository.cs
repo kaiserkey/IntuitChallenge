@@ -54,13 +54,15 @@ namespace Intuit.Api.Data.Repository
             }
         }
 
-        public async Task<IAsyncEnumerable<Client?>> GetAllAsync()
+        public async Task<List<Client?>> GetAllAsync()
         {
             try
             {
-                var clients = Context.Client.OrderBy(c => c.ClientId).AsAsyncEnumerable();
+                var clients = await Context.Client
+                    .OrderBy(c => c.ClientId)
+                    .ToListAsync();
 
-                return await Task.FromResult(clients);
+                return clients;
             }
             catch (DbException ex)
             {
@@ -95,16 +97,16 @@ namespace Intuit.Api.Data.Repository
             }
         }
 
-        public async Task<IAsyncEnumerable<Client?>> SearchByNameAsync(string name)
+        public async Task<List<Client?>> SearchByNameAsync(string name)
         {
             try
             {
-                var clients = Context.Client
+                var clients = await Context.Client
                     .Where(c => EF.Functions.Like(c.FirstName + " " + c.LastName, $"%{name}%"))
                     .OrderBy(c => c.ClientId)
-                    .AsAsyncEnumerable();
+                    .ToListAsync();
 
-                return await Task.FromResult(clients);
+                return clients;
             }
             catch (DbException ex)
             {

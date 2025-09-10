@@ -4,7 +4,7 @@ namespace Intuit.Api.Interfaces
 {
     public interface IClientRepository : IRepository<Client>
     {
-        Task<IAsyncEnumerable<Client?>> SearchByNameAsync(string name);
+        Task<List<Client?>> SearchByNameAsync(string name);
         Task<bool> GetAnyAsync(string Cuit);
     }
 }

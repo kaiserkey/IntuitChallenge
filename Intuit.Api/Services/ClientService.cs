@@ -79,7 +79,7 @@ namespace Intuit.Api.Services
 
             if (clients != null)
             {
-                await foreach (var client in clients)
+                foreach (var client in clients)
                 {
                     clientsDto.Add(new ClientReadDto(
                         client.ClientId,
@@ -126,21 +126,18 @@ namespace Intuit.Api.Services
 
             if (clients != null)
             {
-                await foreach (var client in clients)
+                foreach (var client in clients)
                 {
-                    if (client != null)
-                    {
-                        clientsDto.Add(new ClientReadDto(
-                            client.ClientId,
-                            client.FirstName,
-                            client.LastName,
-                            client.BirthDate,
-                            client.Cuit,
-                            client.Address,
-                            client.Mobile,
-                            client.Email
-                        ));
-                    }
+                    clientsDto.Add(new ClientReadDto(
+                        client.ClientId,
+                        client.FirstName,
+                        client.LastName,
+                        client.BirthDate,
+                        client.Cuit,
+                        client.Address,
+                        client.Mobile,
+                        client.Email
+                    ));
                 }
             }
 
