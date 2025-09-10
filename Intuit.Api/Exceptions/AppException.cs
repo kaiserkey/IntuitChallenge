@@ -11,13 +11,13 @@ namespace Intuit.Api.Exceptions
 
         public AppException(string message, ILogService<LogService> logService) : base(message)
         {
-            logService.LogError($"Application - {message}");
+            logService.LogError($"\nApplication - {message}");
         }
 
         public AppException(string message, ILogService<LogService> logService, Exception innerException)
             : base(message, innerException)
         {
-            logService.LogError($"Application - {message} - [{innerException.Message}] - [{innerException.StackTrace}]");
+            logService.LogError($"\nApplication - {message} - [{innerException.Message}] - [{innerException.StackTrace}]");
         }
     }
 }
