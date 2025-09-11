@@ -35,7 +35,7 @@ namespace Intuit.Api.Controllers
         /// <summary>
         /// Obtiene todos los clientes.
         /// </summary>
-        [HttpGet("getClients", Name = "GetClients")]
+        [HttpGet(Name = "GetClients")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<ClientReadDto>))]
         public async Task<ActionResult> GetAll()
             => Map(await _svc.GetAllClients());
@@ -43,7 +43,7 @@ namespace Intuit.Api.Controllers
         /// <summary>
         /// Obtiene un cliente por id.
         /// </summary>
-        [HttpGet("getClientById/{id:int}", Name = "GetClientById")]
+        [HttpGet("{id:int}", Name = "GetClientById")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ClientReadDto))]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult> GetById(int id)
@@ -52,7 +52,7 @@ namespace Intuit.Api.Controllers
         /// <summary>
         /// Busca por nombre/apellido (substring, case-insensitive).
         /// </summary>
-        [HttpGet("searchClients", Name = "SearchClients")]
+        [HttpGet("search", Name = "SearchClients")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<ClientReadDto>))]
         public async Task<ActionResult> Search([FromQuery] string name = "")
             => Map(await _svc.SearchClientByNameAsync(name));
@@ -60,7 +60,7 @@ namespace Intuit.Api.Controllers
         /// <summary>
         /// Crea un cliente.
         /// </summary>
-        [HttpPost("createClient", Name = "CreateClient")]
+        [HttpPost(Name = "CreateClient")]
         [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(ClientReadDto))]
         [ProducesResponseType(StatusCodes.Status409Conflict)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -80,7 +80,7 @@ namespace Intuit.Api.Controllers
         /// <summary>
         /// Actualiza un cliente.
         /// </summary>
-        [HttpPut("updateClient", Name = "UpdateClient")]
+        [HttpPut(Name = "UpdateClient")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ClientReadDto))]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status409Conflict)]
@@ -92,7 +92,7 @@ namespace Intuit.Api.Controllers
         /// <summary>
         /// Elimina un cliente.
         /// </summary>
-        [HttpDelete("deleteClient/{id:int}", Name = "DeleteClient")]
+        [HttpDelete("{id:int}", Name = "DeleteClient")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult> Delete(int id)
