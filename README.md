@@ -190,7 +190,7 @@ Intuit.Api
 
 ## 6. CORS
 
-Se permiten todos los orígenes en desarrollo. En producción, restringir a dominios específicos.
+Se permiten todos los orígenes para facilitar pruebas desde Postman/Frontends locales. 
 
 ---
 
