@@ -23,7 +23,7 @@
 - **DTOs**: Separación entre modelo de dominio y contratos de API (ClientCreateDto, ClientUpdateDto, ClientReadDto).
 - **Async/Await**: Todas las operaciones de I/O son asíncronas.
 - **Inyección de dependencias**: Se utiliza el contenedor de servicios de .NET para gestionar dependencias.
-- **Separation of Concerns**: Controladores, Servicios, Repositorios, Modelos, DTOs, Validaciones y Logging están separados en capas.
+- **Separation of Concerns**: Controladores, Servicios, Repositorios, Modelos, DTOs, Validaciones y Logging están separados para facilitar el mantenimiento y la escalabilidad.
 - **Repository Pattern**: Abstracción de acceso a datos mediante repositorios genéricos y específicos.
 - **Inmutabilidad**: Los DTOs son inmutables, se crean con todos sus datos en el constructor.
 - **Manejo de resultados**:
