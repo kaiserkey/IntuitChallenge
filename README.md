@@ -422,10 +422,10 @@ Intuit-UI/
 ```
 
 ## Endpoints consumidos
-- `GET /api/clients` – listar
-- `GET /api/clients/search?q={texto}` – búsqueda (nombre/apellido, case-insensitive)
-- `POST /api/clients` – crear cliente
-- `DELETE /api/clients/{id}` – eliminar cliente
+- `GET /api` – listar todos los clientes
+- `GET /api/search?name={texto}` – búsqueda (nombre/apellido, case-insensitive)
+- `POST /api` – crear cliente
+- `DELETE /api/{id}` – eliminar cliente
 
 ## Comportamiento de la UI
 - **Búsqueda** con pequeño *debounce* (300 ms). 
