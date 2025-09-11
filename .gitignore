@@ -1,6 +1,3 @@
-# Ignorar todas las carpetas 'Migrations/' en cualquier nivel del directorio
-**/Migrations/
-
 # Ignorar todas las carpetas 'bin/' en cualquier nivel del directorio
 **/bin/
 
@@ -24,9 +21,6 @@
 
 # Ignorar todas las carpetas 'packages/' en cualquier nivel del directorio
 **/packages/
-
-# Ignorar todas las carpetas 'node_modules/' en cualquier nivel del directorio (si aplica)
-**/node_modules/
 
 # Ignorar todas las carpetas 'dist/' en cualquier nivel del directorio (si aplica)
 **/dist/
