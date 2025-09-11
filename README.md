@@ -371,4 +371,69 @@ Se guardo la colección como `Docs/IntuitChallenge.postman_collection.json` para
 
 ---
 
+# Frontend (React + TypeScript + Material UI)
+
+![.NET](./Docs/FrontReact.png) 
+
+---
+***Se creo una UI mínima para listar, buscar, crear y eliminar clientes contra la API REST desarrollada en .NET.***
+
+---
+## Stack
+- **React** + **TypeScript** (Vite)
+- **Material UI** (MUI)
+- **fetch** nativo (sin axios)
+- Configurable por **`.env`**
+
+## Requisitos
+- Node.js 18+ / 20+
+- Backend corriendo (ver sección API)
+
+## Instalación y ejecución
+```bash
+# Entrar al proyecto del front
+cd Intuit-UI
+
+# Instalar dependencias
+npm install
+
+# Definir la URL del backend
+# (crear archivo .env en la raíz de Intuit-UI)
+# VITE_API_BASE_URL=https://localhost:7178
+
+# Ejecutar en desarrollo (Vite)
+npm run dev
+# Abrir http://localhost:5173
+```
+
+> **CORS:** La API permite todos los orígenes para facilitar pruebas desde frontends locales.
+
+## Estructura
+```
+Intuit-UI/
+├─ .env                           # VITE_API_BASE_URL
+├─ src/
+│  ├─ App.tsx                     # UI: AppBar + búsqueda + tabla + diálogo crear
+│  ├─ api.ts                      # llamadas fetch (GET/POST/DELETE/SEARCH)
+│  ├─ types.ts                    # DTOs (ClientReadDto, etc.)
+│  ├─ theme.ts                    # (opcional) tema MUI
+│  ├─ main.tsx                    # ThemeProvider + CssBaseline
+│  └─ index.css                   # estilos mínimos
+```
+
+## Endpoints consumidos
+- `GET /api/clients` – listar
+- `GET /api/clients/search?q={texto}` – búsqueda (nombre/apellido, case-insensitive)
+- `POST /api/clients` – crear cliente
+- `DELETE /api/clients/{id}` – eliminar cliente
+
+## Comportamiento de la UI
+- **Búsqueda** con pequeño *debounce* (300 ms). 
+- **Feedback** de éxito/error con *Snackbars* de MUI.
+- **Tabla** simple con acciones (crear / eliminar). 
+- **Validación mínima** en el formulario (campos requeridos básicos). 
+
+---
+
 by Fernando Daniel Gonzalez - [GitHub](https://github.com/kaiserkey) - [LinkedIn](https://www.linkedin.com/in/danielsan94/)
+

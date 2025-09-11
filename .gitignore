@@ -133,3 +133,6 @@
 # Ignorar todos los archivos 'yarn-error.log*' en cualquier nivel del directorio (si aplica)
 **/yarn-error.log*
 SuperStock.Api/appsettings.json
+
+# Ignorar archivos de react node_modules
+**/node_modules/
