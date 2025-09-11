@@ -126,7 +126,137 @@ Intuit.Api
 
 ---
 
-## 4. API Endpoints
+## 3.1 Contratos (DTOs)
+
+**ClientCreateDto**
+```json
+{
+  "firstName": "string (required)",
+  "lastName": "string (required)",
+  "birthDate": "YYYY-MM-DD (required, past)",
+  "cuit": "string (required, valid CUIT)",
+  "address": "string (optional)",
+  "mobile": "string (required)",
+  "email": "string (required, email)"
+}
+```
+
+**ClientUpdateDto** = `ClientCreateDto` + `clientId` (required)
+
+**ClientReadDto**
+```json
+{
+  "clientId": 0,
+  "firstName": "string",
+  "lastName": "string",
+  "birthDate": "YYYY-MM-DD",
+  "cuit": "string",
+  "address": "string | null",
+  "mobile": "string",
+  "email": "string"
+}
+```
+
+---
+
+## 4. Manejo de resultados y errores
+
+**ServiceResult**
+- Clase genérica para resultados de negocio esperables.
+- `Result` (bool): éxito/fracaso de negocio
+- `Status` (int): mapea a HTTP (200, 201, 204, 400, 404, 409)
+- `Message` (string?): explicación humana
+- `Data` (object?): payload (DTO/Lista)
+
+**AppException**
+- Excepción personalizada para errores inesperados.
+- Se lanza ante **errores inesperados/infraestructura** (p. ej. `DbUpdateException`, `DbException`).
+
+**Concurrencia**
+- `DbUpdateConcurrencyException` → traducida a **409 Conflict** en el **Service**. 
+
+**Validaciones y duplicados**
+- Reglas esperables → **NO** excepción; el service devuelve `ServiceResult.Validation/Conflict/NotFound`.
+
+---
+
+## 5. Logging
+
+**Serilog**
+- Se utilizo Serilog para logging estructurado.
+- Logs configurados para consola y archivo (`LogFile/Log-YYYYMMDD.txt`).
+
+---
+
+## 6. CORS
+
+Se permiten todos los orígenes en desarrollo. En producción, restringir a dominios específicos.
+
+---
+
+### 7 Crear base y usuario (psql)
+```sql
+-- Abrir consola psql como superusuario (postgres) y ejecutar:
+CREATE DATABASE intuitdb;
+CREATE USER intuituser WITH PASSWORD 'IntuitPwd!';
+GRANT ALL PRIVILEGES ON DATABASE intuitdb TO intuituser;
+-- (opcional) Habilitar privilegios en esquema público si es necesario
+```
+
+### 7.1 Cadena de conexión (appsettings.Development.json)
+
+`Intuit.Api/appsettings.Development.json`
+```json
+{
+  "ConnectionStrings": {
+    "PostgreSQL": "Host=localhost;Port=5432;Database=intuitdb;Username=intuituser;Password=IntuitPwd!"
+  }
+}
+```
+
+> Alternativa: **User Secrets**:
+```bash
+# 1) Secrets 
+cd src/Intuit.Api
+dotnet user-secrets init
+dotnet user-secrets set "ConnectionStrings:PostgreSQL" "Host=localhost;Port=5432;Database=intuitdb;Username=intuituser;Password=IntuitPwd!"
+```
+
+### 7.2 Migraciones EF Core
+```bash
+# Crear migración inicial (en el proyecto que contiene el DbContext)
+# Ubicate en src/Intuit.Api (o el proyecto de inicio) y ajustá --project si el DbContext está en otra lib
+
+dotnet ef migrations add Init --context IntuitDBContext
+
+dotnet ef database update --context IntuitDBContext
+```
+
+### 7.3 Ejecutar la API
+```bash
+cd Intuit.Api
+
+dotnet run
+# Abrir Swagger: https://localhost:{PORT}/swagger
+```
+
+---
+
+## 8 Health Checks
+```csharp
+// Program.cs
+builder.Services.AddHealthChecks().AddNpgSql(builder.Configuration.GetConnectionString("PostgreSQL")!);
+app.MapHealthChecks("/health");
+```
+
+**Probar**
+```bash
+curl https://localhost:PORT/health
+```
+
+---
+
+## 9. API Endpoints
 
 📌 **Base URL (por defecto):**
 ```
@@ -135,7 +265,7 @@ https://localhost:{PORT}/api/clients
 
 ---
 
-## 4.1 Pruebas de la API en Postman y cURL
+## 9.1 Pruebas de la API en Postman y cURL
 
 ## Métodos y rutas
 
@@ -235,140 +365,9 @@ https://localhost:{PORT}/api/clients
 
 ---
 
-## Postman Collection
+## 10. Postman Collection
 
-Se guardo la colección como `Docs/IntuitChallenge.postman_collection.json` y **Importar** en Postman.
-
----
-
-## 5. Contratos (DTOs)
-
-**ClientCreateDto**
-```json
-{
-  "firstName": "string (required)",
-  "lastName": "string (required)",
-  "birthDate": "YYYY-MM-DD (required, past)",
-  "cuit": "string (required, valid CUIT)",
-  "address": "string (optional)",
-  "mobile": "string (required)",
-  "email": "string (required, email)"
-}
-```
-
-**ClientUpdateDto** = `ClientCreateDto` + `clientId` (required)
-
-**ClientReadDto**
-```json
-{
-  "clientId": 0,
-  "firstName": "string",
-  "lastName": "string",
-  "birthDate": "YYYY-MM-DD",
-  "cuit": "string",
-  "address": "string | null",
-  "mobile": "string",
-  "email": "string"
-}
-```
-
----
-
-## 6. Manejo de resultados y errores
-
-**ServiceResult**
-- Clase genérica para resultados de negocio esperables.
-- `Result` (bool): éxito/fracaso de negocio
-- `Status` (int): mapea a HTTP (200, 201, 204, 400, 404, 409)
-- `Message` (string?): explicación humana
-- `Data` (object?): payload (DTO/Lista)
-
-**AppException**
-- Excepción personalizada para errores inesperados.
-- Se lanza ante **errores inesperados/infraestructura** (p. ej. `DbUpdateException`, `DbException`).
-
-**Concurrencia**
-- `DbUpdateConcurrencyException` → traducida a **409 Conflict** en el **Service**. 
-
-**Validaciones y duplicados**
-- Reglas esperables → **NO** excepción; el service devuelve `ServiceResult.Validation/Conflict/NotFound`.
-
----
-
-## 7. Logging
-
-**Serilog**
-- Se utilizo Serilog para logging estructurado.
-- Logs configurados para consola y archivo (`LogFile/Log-YYYYMMDD.txt`).
-
----
-
-### 8 Crear base y usuario (psql)
-```sql
--- Abrir consola psql como superusuario (postgres) y ejecutar:
-CREATE DATABASE intuitdb;
-CREATE USER intuituser WITH PASSWORD 'IntuitPwd!';
-GRANT ALL PRIVILEGES ON DATABASE intuitdb TO intuituser;
--- (opcional) Habilitar privilegios en esquema público si es necesario
-```
-
-### 8.1 Cadena de conexión (appsettings.Development.json)
-
-`Intuit.Api/appsettings.Development.json`
-```json
-{
-  "ConnectionStrings": {
-    "PostgreSQL": "Host=localhost;Port=5432;Database=intuitdb;Username=intuituser;Password=IntuitPwd!;Include Error Detail=true"
-  },
-  "Serilog": {
-    "MinimumLevel": "Information"
-  }
-}
-```
-
-> Alternativa: **User Secrets**:
-```bash
-cd src/Intuit.Api
-dotnet user-secrets init
-dotnet user-secrets set "ConnectionStrings:PostgreSQL" "Host=localhost;Port=5432;Database=intuitdb;Username=intuituser;Password=IntuitPwd!;Include Error Detail=true"
-```
-
-### 8.2 Migraciones EF Core
-```bash
-# Crear migración inicial (en el proyecto que contiene el DbContext)
-# Ubicate en src/Intuit.Api (o el proyecto de inicio) y ajustá --project si el DbContext está en otra lib
-
-dotnet ef migrations add Init --context IntuitDBContext
-
-dotnet ef database update --context IntuitDBContext
-```
-
-### 8.3 Ejecutar la API
-```bash
-cd Intuit.Api
-dotnet run
-# Abrir Swagger: https://localhost:{PORT}/swagger
-```
-
----
-
-## 9. Health Checks
-```csharp
-// Program.cs
-builder.Services.AddHealthChecks().AddNpgSql(builder.Configuration.GetConnectionString("PostgreSQL")!);
-app.MapHealthChecks("/health");
-```
-
-**Probar**
-```bash
-curl https://localhost:PORT/health
-```
-
----
-
-## 10. CORS
-
-Se permiten todos los orígenes en desarrollo. En producción, restringir a dominios específicos.
+Se guardo la colección como `Docs/IntuitChallenge.postman_collection.json` para **Importar** en Postman.
 
 ---
 
