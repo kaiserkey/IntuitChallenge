@@ -135,131 +135,109 @@ https://localhost:{PORT}/api/clients
 
 ---
 
-### 4.1 Listar todos
-- **GET** `/api/clients`
-- **OperationId**: `GetClients`
-- **200 OK** → `ClientReadDto[]`
+## 4.1 Pruebas de la API en Postman y cURL
 
-**cURL**
+## Métodos y rutas
+
+| OperationId       | Método | Ruta                              | Descripción                                                |
+| ----------------- | ------ | --------------------------------- | ---------------------------------------------------------- |
+| **GetClients**    | GET    | `/api/clients`                    | Lista todos los clientes                                   |
+| **GetClientById** | GET    | `/api/clients/{id}`               | Obtiene un cliente por Id                                  |
+| **SearchClients** | GET    | `/api/clients/search?name={name}` | Búsqueda por nombre/apellido (substring, case-insensitive) |
+| **CreateClient**  | POST   | `/api/clients`                    | Crea un cliente                                            |
+| **UpdateClient**  | PUT    | `/api/clients/{id}`               | Actualiza un cliente (Id de ruta = `clientId` del body)    |
+| **DeleteClient**  | DELETE | `/api/clients/{id}`               | Elimina un cliente                                         |
+
+---
+
+## cURL
+
+### Listar todos
+
+![.NET](./Docs/getclients.png)
+
 ```bash
-curl https://localhost:PORT/api/clients
+  curl -X 'GET' \
+    'https://localhost:7178/api' \
+    -H 'accept: text/plain'
+```
+
+### Obtener por id
+
+![.NET](./Docs/GetClientById.png)
+
+```bash
+  curl -X 'GET' \
+    'https://localhost:7178/api/1' \
+    -H 'accept: text/plain'
+```
+
+### Búsqueda (name)
+
+![.NET](./Docs/SearchClients.png)
+
+```bash
+  curl -X 'GET' \
+    'https://localhost:7178/api/search?name=ana' \
+    -H 'accept: text/plain'
+```
+
+### Crear
+
+![.NET](./Docs/CreateClient.png) 
+
+```bash
+  curl -X 'POST' \
+    'https://localhost:7178/api' \
+    -H 'accept: text/plain' \
+    -H 'Content-Type: application/json' \
+    -d '{
+          "firstName": "Fernando",
+          "lastName": "Gonzalez",
+          "birthdate": "1994-01-24",
+          "cuit": "20-37930187-9",
+          "address": "Calle Falsa 123",
+          "mobile": "+5491234334455",
+          "email": "fer@example.com"
+  }'
+```
+
+### Actualizar (Id de ruta = clientId del body)
+
+![.NET](./Docs/UpdateClient.png) 
+
+```bash
+  curl -X 'PUT' \
+    'https://localhost:7178/api' \
+    -H 'accept: text/plain' \
+    -H 'Content-Type: application/json' \
+    -d '{
+  "clientId": 22,
+      "firstName": "Fernando Daniel",
+      "lastName": "Gonzalez",
+      "birthDate": "1994-01-24",
+      "cuit": "20-37930187-9",
+      "address": "Calle Falsa 123",
+      "mobile": "+5491234334455",
+      "email": "fer@example.com"
+  }'
+```
+
+### Eliminar
+
+![.NET](./Docs/DeleteClient.png) 
+
+```bash
+  curl -X 'DELETE' \
+    'https://localhost:7178/api/4' \
+    -H 'accept: */*'
 ```
 
 ---
 
-### 4.2 Obtener por id
-- **GET** `/api/clients/{id}`
-- **OperationId**: `GetClientById`
-- **200 OK** → `ClientReadDto`  
-- **404 NotFound**
+## Postman Collection
 
-**cURL**
-```bash
-curl https://localhost:PORT/api/clients/1
-```
-
----
-
-### 4.3 Búsqueda por nombre/apellido (substring, case-insensitive)
-- **GET** `/api/clients/search?name={texto}`
-- **OperationId**: `SearchClients`
-- **200 OK** → `ClientReadDto[]` (puede ser vacío)
-
-**cURL**
-```bash
-curl "https://localhost:PORT/api/clients/search?name=gar"
-```
-
----
-
-### 4.4 Crear
-- **POST** `/api/clients`
-- **OperationId**: `CreateClient`
-- **Body**: `ClientCreateDto`
-- **201 Created** → `ClientReadDto` + header `Location` (con `GetById`)  
-- **409 Conflict** (CUIT/Email duplicado)  
-- **400 BadRequest** (validación DTO)
-
-**Body ejemplo**
-```json
-{
-  "firstName": "Ana",
-  "lastName": "García",
-  "birthDate": "1990-05-12",
-  "cuit": "27-12345678-5",
-  "address": "Calle Falsa 123",
-  "mobile": "+5491122334455",
-  "email": "ana@example.com"
-}
-```
-
-**cURL**
-```bash
-curl -X POST https://localhost:PORT/api/clients \
- -H "Content-Type: application/json" \
- -d '{
-   "firstName":"Ana",
-   "lastName":"García",
-   "birthDate":"1990-05-12",
-   "cuit":"27-12345678-5",
-   "address":"Calle Falsa 123",
-   "mobile":"+5491122334455",
-   "email":"ana@example.com"
- }'
-```
-
----
-
-### 4.5 Actualizar
-- **PUT** `/api/clients`
-- **OperationId**: `UpdateClient`
-- **Body**: `ClientUpdateDto`
-- **200 OK** → `ClientReadDto`  
-- **404 NotFound** (id inexistente)  
-- **409 Conflict** (CUIT/Email de otro cliente)
-
-**Body ejemplo**
-```json
-{
-  "clientId": 1,
-  "firstName": "Ana",
-  "lastName": "García",
-  "birthDate": "1990-05-12",
-  "cuit": "27-12345678-5",
-  "address": "Av. Siempreviva 742",
-  "mobile": "+5491122334455",
-  "email": "ana@example.com"
-}
-```
-
-**cURL**
-```bash
-curl -X PUT https://localhost:PORT/api/clients \
- -H "Content-Type: application/json" \
- -d '{
-   "clientId":1,
-   "firstName":"Ana",
-   "lastName":"García",
-   "birthDate":"1990-05-12",
-   "cuit":"27-12345678-5",
-   "address":"Av. Siempreviva 742",
-   "mobile":"+5491122334455",
-   "email":"ana@example.com"
- }'
-```
-
----
-
-### 4.6 Eliminar
-- **DELETE** `/api/clients/{id}`
-- **OperationId**: `DeleteClient`
-- **204 NoContent**  
-- **404 NotFound**
-
-**cURL**
-```bash
-curl -X DELETE https://localhost:PORT/api/clients/1
-```
+Se guardo la colección como `Docs/IntuitChallenge.postman_collection.json` y **Importar** en Postman.
 
 ---
 
@@ -325,12 +303,7 @@ curl -X DELETE https://localhost:PORT/api/clients/1
 
 ---
 
-### 8.1 Requisitos
-- .NET 8 SDK
-- PostgreSQL 14+ (recomendado 16)
-- Acceso a GUI (pgAdmin)
-
-### 8.2 Crear base y usuario (psql)
+### 8 Crear base y usuario (psql)
 ```sql
 -- Abrir consola psql como superusuario (postgres) y ejecutar:
 CREATE DATABASE intuitdb;
@@ -339,7 +312,7 @@ GRANT ALL PRIVILEGES ON DATABASE intuitdb TO intuituser;
 -- (opcional) Habilitar privilegios en esquema público si es necesario
 ```
 
-### 8.3 Cadena de conexión (appsettings.Development.json)
+### 8.1 Cadena de conexión (appsettings.Development.json)
 
 `Intuit.Api/appsettings.Development.json`
 ```json
@@ -360,7 +333,7 @@ dotnet user-secrets init
 dotnet user-secrets set "ConnectionStrings:PostgreSQL" "Host=localhost;Port=5432;Database=intuitdb;Username=intuituser;Password=IntuitPwd!;Include Error Detail=true"
 ```
 
-### 8.5 Migraciones EF Core
+### 8.2 Migraciones EF Core
 ```bash
 # Crear migración inicial (en el proyecto que contiene el DbContext)
 # Ubicate en src/Intuit.Api (o el proyecto de inicio) y ajustá --project si el DbContext está en otra lib
@@ -370,7 +343,7 @@ dotnet ef migrations add Init --context IntuitDBContext
 dotnet ef database update --context IntuitDBContext
 ```
 
-### 8.6 Ejecutar la API
+### 8.3 Ejecutar la API
 ```bash
 cd Intuit.Api
 dotnet run
@@ -379,7 +352,7 @@ dotnet run
 
 ---
 
-## 10. Health Checks
+## 9. Health Checks
 ```csharp
 // Program.cs
 builder.Services.AddHealthChecks().AddNpgSql(builder.Configuration.GetConnectionString("PostgreSQL")!);
@@ -393,7 +366,7 @@ curl https://localhost:PORT/health
 
 ---
 
-## 11. CORS
+## 10. CORS
 
 Se permiten todos los orígenes en desarrollo. En producción, restringir a dominios específicos.
 

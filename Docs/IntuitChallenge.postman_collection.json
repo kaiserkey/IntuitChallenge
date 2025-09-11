@@ -1,0 +1,190 @@
+{
+	"info": {
+		"_postman_id": "5757d494-1f84-4d9a-9a12-7e1da250cbda",
+		"name": "IntuitChallenge",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "23758297",
+		"_collection_link": "https://lively-comet-872274.postman.co/workspace/BeClever~e3dd9695-03bd-4fe1-b8d6-2d2be45a3d43/collection/23758297-5757d494-1f84-4d9a-9a12-7e1da250cbda?action=share&source=collection_link&creator=23758297"
+	},
+	"item": [
+		{
+			"name": "GetClients",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "accept",
+						"value": "text/plain"
+					}
+				],
+				"url": {
+					"raw": "https://localhost:7178/api",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "7178",
+					"path": [
+						"api"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GetClientById",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "accept",
+						"value": "text/plain"
+					}
+				],
+				"url": {
+					"raw": "https://localhost:7178/api/1",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "7178",
+					"path": [
+						"api",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "SearchClients",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "accept",
+						"value": "text/plain"
+					}
+				],
+				"url": {
+					"raw": "https://localhost:7178/api/search?name=ana",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "7178",
+					"path": [
+						"api",
+						"search"
+					],
+					"query": [
+						{
+							"key": "name",
+							"value": "ana"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "CreateClient",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "accept",
+						"value": "text/plain"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n        \"firstName\": \"Fernando\",\n        \"lastName\": \"Gonzalez\",\n        \"birthdate\": \"1994-01-24\",\n        \"cuit\": \"20-37930187-9\",\n        \"address\": \"Calle Falsa 123\",\n        \"mobile\": \"+5491234334455\",\n        \"email\": \"fer@example.com\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://localhost:7178/api",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "7178",
+					"path": [
+						"api"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "UpdateClient",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "accept",
+						"value": "text/plain"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\"clientId\": 22,\n    \"firstName\": \"Fernando Daniel\",\n    \"lastName\": \"Gonzalez\",\n    \"birthDate\": \"1994-01-24\",\n    \"cuit\": \"20-37930187-9\",\n    \"address\": \"Calle Falsa 123\",\n    \"mobile\": \"+5491234334455\",\n    \"email\": \"fer@example.com\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://localhost:7178/api",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "7178",
+					"path": [
+						"api"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "DeleteClient",
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "accept",
+						"value": "*/*"
+					}
+				],
+				"url": {
+					"raw": "https://localhost:7178/api/4",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "7178",
+					"path": [
+						"api",
+						"4"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
