@@ -16,7 +16,7 @@ builder.Host.UseSerilog();
 
 Log.Information("Iniciando la aplicacion...");
 
-// Configurar la conexi�n a PostgreSQL
+// Configurar la conexion a PostgreSQL
 var connectionString = builder.Configuration.GetConnectionString("PostgreSQL");
 
 builder.Services.AddDbContext<IntuitDBContext>(
@@ -31,12 +31,13 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
-    // incluir comentarios XML
+    // Incluir comentarios XML
     var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
     var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-    c.IncludeXmlComments(xmlPath, includeControllerXmlComments: true); // Incluir comentarios de controladores
+    c.IncludeXmlComments(xmlPath, includeControllerXmlComments: true); 
 
-    c.CustomOperationIds(api => api.TryGetMethodInfo(out var mi) ? mi.Name : null); // Nombres de metodos como operationId
+    // Nombres de metodos como operationId
+    c.CustomOperationIds(api => api.TryGetMethodInfo(out var mi) ? mi.Name : null); 
 });
 
 //configuracion de los CORS
@@ -68,10 +69,11 @@ app.MapHealthChecks("/health");
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<IntuitDBContext>();
-    db.Database.Migrate();
+    //Eliminar todo y volverlo a cargar
+    //db.Database.EnsureDeleted();
+    //db.Database.EnsureCreated();
+    //db.Database.Migrate();
 }
-
-// Configure the HTTP request pipeline.
 
 app.UseSwagger();
 app.UseSwaggerUI(c =>
@@ -79,9 +81,11 @@ app.UseSwaggerUI(c =>
     c.SwaggerEndpoint("/swagger/v1/swagger.yaml", "Intuit.Api");
 });
 
-// Middleware
-app.UseExceptionHandler(); // Middleware para manejar excepciones globales
-app.UseSerilogRequestLogging(); // Middleware para loggear las solicitudes HTTP
+
+// Middleware para manejar excepciones globales
+app.UseExceptionHandler(); 
+// Middleware para loggear las solicitudes HTTP
+app.UseSerilogRequestLogging(); 
 
 app.UseSwagger();
 app.UseSwaggerUI();

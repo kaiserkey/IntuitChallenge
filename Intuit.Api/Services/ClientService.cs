@@ -135,7 +135,7 @@ namespace Intuit.Api.Services
             }
 
             LogService.LogInfo($"[Service] Delete -> 204 (id={id})");
-            return new ServiceResult { Result = true, Message = "Cliente eliminado.", Status = StatusCodes.Status204NoContent };
+            return new ServiceResult { Result = true, Message = "Cliente eliminado.", Status = StatusCodes.Status200OK };
         }
     }
 }

@@ -80,7 +80,7 @@ namespace Intuit.Api.Controllers
         /// <summary>
         /// Actualiza un cliente.
         /// </summary>
-        [HttpPut("updateClient/{id:int}", Name = "UpdateClient")]
+        [HttpPut("updateClient", Name = "UpdateClient")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ClientReadDto))]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status409Conflict)]
