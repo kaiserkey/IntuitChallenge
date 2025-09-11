@@ -108,14 +108,13 @@ namespace Intuit.Api.Data.Repository
             try
             {
                 return await Context.Client
-                    .Where(c => EF.Functions.ILike(c.FirstName, $"%{name}%")
-                             || EF.Functions.ILike(c.LastName, $"%{name}%"))
+                    .Where(c => EF.Functions.ILike(c.FirstName + " " + c.LastName, $"%{name}%"))
                     .OrderBy(c => c.ClientId)
                     .ToListAsync();
             }
             catch (DbException ex) 
             {
-                throw new AppException($"[DB] Search failed q='{name}'", LogService, ex);
+                throw new AppException($"[DB] Search failed name='{name}'", LogService, ex);
             }
         }
     }

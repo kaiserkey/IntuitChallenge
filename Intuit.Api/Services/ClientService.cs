@@ -20,7 +20,8 @@ namespace Intuit.Api.Services
         {
             var list = await ClientRepository.GetAllAsync();
             var dto = list.Select(c => new ClientReadDto(
-                c.ClientId, c.FirstName, c.LastName, c.BirthDate, c.Cuit, c.Address, c.Mobile, c.Email)).ToList();
+                          c.ClientId, c.FirstName, c.LastName, c.BirthDate, c.Cuit, c.Address, c.Mobile, c.Email))
+                           .ToList();
 
             LogService.LogInfo($"[Service] GetAll -> {dto.Count} items");
             return ServiceResult.Ok(dto);
@@ -32,7 +33,7 @@ namespace Intuit.Api.Services
             if (c is null)
             {
                 LogService.LogWarning($"[Service] GetById -> 404 (id={id})");
-                return ServiceResult.NotFound($"El Cliente con el id={id} no existe.");
+                return ServiceResult.NotFound($"El cliente con id={id} no existe.");
             }
 
             var dto = new ClientReadDto(c.ClientId, c.FirstName, c.LastName, c.BirthDate, c.Cuit, c.Address, c.Mobile, c.Email);
@@ -44,10 +45,11 @@ namespace Intuit.Api.Services
         {
             var list = await ClientRepository.SearchByNameAsync(nameOrQuery);
             var dto = list.Select(c => new ClientReadDto(
-                c.ClientId, c.FirstName, c.LastName, c.BirthDate, c.Cuit, c.Address, c.Mobile, c.Email)).ToList();
+                          c.ClientId, c.FirstName, c.LastName, c.BirthDate, c.Cuit, c.Address, c.Mobile, c.Email))
+                           .ToList();
 
             LogService.LogInfo($"[Service] Search '{nameOrQuery}' -> {dto.Count} items");
-            return ServiceResult.Ok(dto); 
+            return ServiceResult.Ok(dto);
         }
 
         public async Task<ServiceResult> AddNewClients(ClientCreateDto dto)
@@ -69,20 +71,15 @@ namespace Intuit.Api.Services
                 Email = dto.Email.Trim().ToLowerInvariant()
             };
 
-            try
+            var ok = await ClientRepository.AddAsync(c);
+            if (!ok)
             {
-                var ok = await ClientRepository.AddAsync(c);
-                if (!ok)
-                    throw new AppException($"[DB] Falló insertar cliente: {ToJson(dto)}", LogService);
+                throw new AppException($"[DB] Insert returned 0 rows: {ToJson(dto)}", LogService);
+            }
 
-                var read = new ClientReadDto(c.ClientId, c.FirstName, c.LastName, c.BirthDate, c.Cuit, c.Address, c.Mobile, c.Email);
-                LogService.LogInfo($"[Service] Create -> 201 (id={c.ClientId})");
-                return ServiceResult.Ok(read, "Cliente creado correctamente.");
-            }
-            catch (DbUpdateException ex)
-            {
-                throw new AppException($"[DB] Excepción insertando cliente: {ToJson(dto)}", LogService, ex);
-            }
+            var read = new ClientReadDto(c.ClientId, c.FirstName, c.LastName, c.BirthDate, c.Cuit, c.Address, c.Mobile, c.Email);
+            LogService.LogInfo($"[Service] Create -> 201 (id={c.ClientId})");
+            return ServiceResult.Ok(read, "Cliente creado correctamente.");
         }
 
         public async Task<ServiceResult> UpdateClient(ClientUpdateDto dto)
@@ -94,10 +91,9 @@ namespace Intuit.Api.Services
                 return ServiceResult.NotFound($"Id {dto.ClientId} no existe.");
             }
 
-
+            // Evitar falso duplicado si el CUIT no cambió
             var cuitDuplicado = await ClientRepository.GetAnyAsync(dto.Cuit)
-                && !string.Equals(c.Cuit, dto.Cuit, StringComparison.OrdinalIgnoreCase);
-
+                                 && !string.Equals(c.Cuit, dto.Cuit, StringComparison.OrdinalIgnoreCase);
             if (cuitDuplicado)
             {
                 LogService.LogWarning($"[Service] Update -> 409 (CUIT={dto.Cuit})");
@@ -116,7 +112,7 @@ namespace Intuit.Api.Services
             {
                 var ok = await ClientRepository.UpdateAsync(c);
                 if (!ok)
-                    throw new AppException($"[DB] Falló actualizar cliente: {ToJson(dto)}", LogService);
+                    throw new AppException($"[DB] Update returned 0 rows: {ToJson(dto)}", LogService);
 
                 var read = new ClientReadDto(c.ClientId, c.FirstName, c.LastName, c.BirthDate, c.Cuit, c.Address, c.Mobile, c.Email);
                 LogService.LogInfo($"[Service] Update -> 200 (id={c.ClientId})");
@@ -127,31 +123,19 @@ namespace Intuit.Api.Services
                 LogService.LogWarning($"[Service] Update -> 409 (concurrencia)");
                 return ServiceResult.Conflict("Conflicto de concurrencia.");
             }
-            catch (DbUpdateException ex)
-            {
-                throw new AppException($"[DB] Excepción actualizando cliente: {ToJson(dto)}", LogService, ex);
-            }
         }
 
         public async Task<ServiceResult> DeleteClient(int id)
         {
-            try
+            var ok = await ClientRepository.DeleteAsync(id);
+            if (!ok)
             {
-                var ok = await ClientRepository.DeleteAsync(id);
-                if (!ok)
-                {
-                    LogService.LogWarning($"[Service] Delete -> 404 (id={id})");
-                    return ServiceResult.NotFound($"El cliente con el Id {id} no existe.");
-                }
-
-                LogService.LogInfo($"[Service] Delete -> 204 (id={id})");
-
-                return new ServiceResult { Result = true, Message = "Cliente eliminado.", Status = StatusCodes.Status204NoContent };
+                LogService.LogWarning($"[Service] Delete -> 404 (id={id})");
+                return ServiceResult.NotFound($"El cliente con Id {id} no existe.");
             }
-            catch (DbUpdateException ex)
-            {
-                throw new AppException($"[DB] Excepción eliminando cliente id={id}", LogService, ex);
-            }
+
+            LogService.LogInfo($"[Service] Delete -> 204 (id={id})");
+            return new ServiceResult { Result = true, Message = "Cliente eliminado.", Status = StatusCodes.Status204NoContent };
         }
     }
 }

@@ -6,6 +6,7 @@ using Intuit.Api.Logging;
 using Intuit.Api.Services;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
+using Swashbuckle.AspNetCore.SwaggerGen;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -33,7 +34,9 @@ builder.Services.AddSwaggerGen(c =>
     // incluir comentarios XML
     var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
     var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-    c.IncludeXmlComments(xmlPath, includeControllerXmlComments: true);
+    c.IncludeXmlComments(xmlPath, includeControllerXmlComments: true); // Incluir comentarios de controladores
+
+    c.CustomOperationIds(api => api.TryGetMethodInfo(out var mi) ? mi.Name : null); // Nombres de metodos como operationId
 });
 
 //configuracion de los CORS
@@ -51,7 +54,15 @@ builder.Services.AddCors(
     }
 );
 
+builder.Services.AddProblemDetails();
+
+builder.Services.AddHealthChecks()
+    .AddDbContextCheck<IntuitDBContext>(name: "postgres_context");
+
+
 var app = builder.Build();
+
+app.MapHealthChecks("/health");
 
 // Migraciones automáticas
 using (var scope = app.Services.CreateScope())
@@ -69,6 +80,7 @@ app.UseSwaggerUI(c =>
 });
 
 // Middleware
+app.UseExceptionHandler(); // Middleware para manejar excepciones globales
 app.UseSerilogRequestLogging(); // Middleware para loggear las solicitudes HTTP
 
 app.UseSwagger();
